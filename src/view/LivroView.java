@@ -4,14 +4,19 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import repository.LivroRepository;
 import model.Livro;
+
 import java.awt.*;
 import java.util.List;
 
 public class LivroView extends JPanel {
-    private LivroRepository repo = new LivroRepository();
+
+    // ✅ REPOSITÓRIO COMPARTILHADO
+    private LivroRepository repo;
     private JTable table;
 
-    public LivroView() {
+    public LivroView(LivroRepository repo) {
+        this.repo = repo;
+
         setLayout(new BorderLayout());
 
         // Tabela
@@ -34,47 +39,16 @@ public class LivroView extends JPanel {
 
         add(painelBotoes, BorderLayout.SOUTH);
 
-        // AÇÃO ADICIONAR (SEM ID — gerado automaticamente)
-        add.addActionListener(e -> {
-            try {
-                String titulo = JOptionPane.showInputDialog("Título:");
-                if (titulo == null || titulo.isBlank()) return;
-
-                String autor = JOptionPane.showInputDialog("Autor:");
-                if (autor == null || autor.isBlank()) return;
-
-                String anoStr = JOptionPane.showInputDialog("Ano:");
-                if (anoStr == null) return;
-                int ano = Integer.parseInt(anoStr);
-
-                // método correto
-                repo.adicionar(titulo, autor, ano);
-
-                loadTable();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(null, "Entrada inválida!");
-            }
-        });
+        // AÇÃO ADICIONAR
+        add.addActionListener(e -> adicionarLivro());
 
         // AÇÃO EXCLUIR
-        del.addActionListener(e -> {
-            try {
-                String idStr = JOptionPane.showInputDialog("ID para excluir:");
-                if (idStr == null) return;
-
-                int id = Integer.parseInt(idStr);
-                repo.excluir(id);
-
-                loadTable();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(null, "ID inválido!");
-            }
-        });
+        del.addActionListener(e -> excluirLivro());
 
         // AÇÃO SAIR
         sair.addActionListener(e -> {
             int opcao = JOptionPane.showConfirmDialog(
-                    null,
+                    this,
                     "Tem certeza que deseja sair?",
                     "Sair",
                     JOptionPane.YES_NO_OPTION
@@ -85,6 +59,41 @@ public class LivroView extends JPanel {
         });
 
         loadTable();
+    }
+
+    private void adicionarLivro() {
+        try {
+            String titulo = JOptionPane.showInputDialog(this, "Título:");
+            if (titulo == null || titulo.isBlank()) return;
+
+            String autor = JOptionPane.showInputDialog(this, "Autor:");
+            if (autor == null || autor.isBlank()) return;
+
+            String anoStr = JOptionPane.showInputDialog(this, "Ano:");
+            if (anoStr == null) return;
+
+            int ano = Integer.parseInt(anoStr);
+
+            repo.adicionar(titulo, autor, ano);
+            loadTable();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Entrada inválida!");
+        }
+    }
+
+    private void excluirLivro() {
+        try {
+            String idStr = JOptionPane.showInputDialog(this, "ID para excluir:");
+            if (idStr == null) return;
+
+            int id = Integer.parseInt(idStr);
+            repo.excluir(id);
+            loadTable();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "ID inválido!");
+        }
     }
 
     private void loadTable() {
